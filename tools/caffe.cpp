@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include "caffe/caffe.hpp"
 
 using caffe::Blob;
@@ -289,6 +288,7 @@ int main(int argc, char** argv) {
       "  time            benchmark model execution time");
   // Run tool or show usage.
   caffe::GlobalInit(&argc, &argv);
+
 
 //  printf("globalInit finished\n");//alan
 //  Mypause();

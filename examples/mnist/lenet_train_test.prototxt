@@ -32,7 +32,8 @@ layers {
 
 layers {
   name: "conv1"
-  type: CONVOLUTION
+  #type: CONVOLUTION
+  type: SCALE_CONVOLUTION
   bottom: "data"
   top: "conv1"
   blobs_lr: 1
@@ -47,6 +48,10 @@ layers {
     bias_filler {
       type: "constant"
     }
+  }
+  scale_convolution_param{
+    scale_start: 0
+	scale_end: 1
   }
 }
 layers {

@@ -112,6 +112,42 @@ class ConvolutionLayer : public Layer<Dtype> {
   Blob<Dtype> bias_multiplier_;
 };
 
+template <typename Dtype>
+class ScaleConvolutionLayer : public ConvolutionLayer<Dtype>{
+/**
+ * The same as convolutional layer.
+ * Adding random scale at the input in order to offer scale invariance.
+ * by alan huang
+ */
+public:
+	  explicit ScaleConvolutionLayer(const LayerParameter& param)
+	      : ConvolutionLayer<Dtype>(param) {this->cur_scale = 0;}
+	  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+	      const vector<Blob<Dtype>*>& top);
+//	  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+//	      const vector<Blob<Dtype>*>& top){}
+
+	  virtual inline LayerParameter_LayerType type() const {
+	    return LayerParameter_LayerType_CONVOLUTION;
+	  }
+//	  virtual inline int MinBottomBlobs() const { return 1; }
+//	  virtual inline int MinTopBlobs() const { return 1; }
+//	  virtual inline bool EqualNumBottomTopBlobs() const { return true;}
+protected:
+	float cur_scale;
+	float scale_start;
+	float scale_end;
+	virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+	  const vector<Blob<Dtype>*>& top);
+	virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+	  const vector<Blob<Dtype>*>& top){}
+	virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+	virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){}
+};
+
+
 #ifdef USE_CUDNN
 /*
  * @brief cuDNN implementation of ConvolutionLayer.
