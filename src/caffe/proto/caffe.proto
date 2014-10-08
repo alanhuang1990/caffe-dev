@@ -264,6 +264,10 @@ message LayerParameter {
     THRESHOLD = 31; 
 	
 	SCALE_CONVOLUTION = 38; // added by alan
+	BINDING = 3001; // added by alan
+	MASK_CONVOLUTION = 3002; // added by alan
+	SPECIFIED_SOFT_PLUS_CONVOLUTION = 3003;  // added by alan
+	SPECIFIED_ACROSS_CHANNELS_SUM_POOLING = 3004; // added by alan
   }
   optional LayerType type = 5; // the layer type from the enum above
 
@@ -321,7 +325,12 @@ message LayerParameter {
   optional WindowDataParameter window_data_param = 20;
 
   optional ScaleConvolutionParameter scale_convolution_param = 41; // added by alan
-
+  optional BindingParameter    binding_param = 3001; // added by alan
+  optional MaskConvolutionParameter mask_convolution_param = 3002;   
+  optional SpecifiedSoftPlusConvolutionParameter specified_soft_plus_convolution_param = 3003; // added by alan
+  optional SpecifiedAcrossChannelsSumPoolingParameter  specified_across_channels_sum_pooling_param = 3004; // by alan
+  
+  
   // Parameters for data pre-processing.
   optional TransformationParameter transform_param = 36;
 
@@ -379,6 +388,29 @@ message ContrastiveLossParameter {
   optional float margin = 1 [default = 1.0];
 }
 
+// message that stores parameters used by BindingLayer  by alan
+message BindingParameter
+{
+	optional uint32 num_binding_group = 1; // the number of binding groups
+	optional uint32 channels_each_group = 2; // the number of channels in each group;
+	optional string binding_rules = 3;  // the binding rules. It contains  num_binding_group*channels_each_group integers, each 										// ${channels_each_group} of which describe the rule for one group. 
+										// example: 0 1 2   2 3 1  for num_binding_group=1 and channels_each_group=3, specify two groups.
+									 
+}
+// added by alan
+message SpecifiedSoftPlusConvolutionParameter{
+
+	optional string rule_file_path = 1;  // the file that describes the rule of convolution channels. 
+	// has n_output_ lines, each line has n_channel_input interger valued 0 or 1.  If zero, the channel is masked
+	optional float  beta = 2 [default = 1];  
+}
+
+// added by alan
+message SpecifiedAcrossChannelsSumPoolingParameter{
+	optional string rule_file_path = 1 ;  // the same as rules in SpecifiedSoftPlusConvolutionParameter
+	optional uint32 num_output = 2 ;
+}
+
 // Message that stores parameters used by ConvolutionLayer
 message ConvolutionParameter {
   optional uint32 num_output = 1; // The number of outputs for the layer
@@ -409,6 +441,15 @@ message ConvolutionParameter {
 message ScaleConvolutionParameter {
   optional float scale_start = 1 [default = 0];
   optional float scale_end = 2 [default = 0] ; 
+}
+
+// message that stores parameters used by MaskConvolutionLayer // added by alan
+message MaskConvolutionParameter {
+
+	optional string mask_rules_file_path = 1; //the binding rules. It contains  ${channels * num_output} integers, each 										// ${channels} of which describe the rule for one kernel. 
+										// example: 0 0 1   1 0 1  for channels=3 and num_output=2. The number 1 indicates that 
+										// the corresponding channel is activated
+										
 }
 
 // Message that stores parameters used by DataLayer
@@ -583,7 +624,9 @@ message PoolingParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
+
   }
+
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
   // dimensions in height and width or as Y, X pairs.

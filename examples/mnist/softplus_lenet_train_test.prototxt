@@ -95,10 +95,40 @@ layers {
     stride: 2
   }
 }
+
+
+layers{
+	name: "softplus1"
+	type: SPECIFIED_SOFT_PLUS_CONVOLUTION
+	bottom: "pool2"
+	top: "softplus1"
+    blobs_lr: 1
+    blobs_lr: 2
+    convolution_param {
+      num_output: 50
+	  pad: 20
+      kernel_size: 40
+      stride: 1
+      weight_filler {
+        type: "xavier"
+      }
+      bias_filler {
+        type: "constant"
+      }
+    }
+	specified_soft_plus_convolution_param{
+	
+		rule_file_path: "examples/mnist/soft_plus_rule.txt"
+		beta: 1 
+	}
+}
+
+
 layers {
   name: "ip1"
   type: INNER_PRODUCT
-  bottom: "pool2"
+  #bottom: "pool2"
+  bottom: "softplus1"
   top: "ip1"
   blobs_lr: 1
   blobs_lr: 2

@@ -112,6 +112,82 @@ class ConvolutionLayer : public Layer<Dtype> {
   Blob<Dtype> bias_multiplier_;
 };
 
+template<typename Dtype>
+class MaskConvolutionLayer : public ConvolutionLayer<Dtype>{
+	/**
+	 * The same as convolutional layer.
+	 * Adding mask to block the response in some channels.
+	 * by alan huang
+	 */
+public:
+	explicit MaskConvolutionLayer(const LayerParameter& param)
+    : ConvolutionLayer<Dtype>(param) {}
+	virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+		      const vector<Blob<Dtype>*>& top);
+	virtual inline LayerParameter_LayerType type() const{
+		return LayerParameter_LayerType_MASK_CONVOLUTION;
+	}
+protected:
+	vector< vector <int> >Masks_;
+	virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+	  const vector<Blob<Dtype>*>& top);
+	virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+	  const vector<Blob<Dtype>*>& top){}
+	virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+	virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){}
+};
+
+// added by alan
+template<typename Dtype>
+class SpecifiedSoftPlusConvolutionLayer : public ConvolutionLayer<Dtype>{
+
+public: explicit SpecifiedSoftPlusConvolutionLayer (const LayerParameter & param)
+			: ConvolutionLayer<Dtype>(param){}
+		virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+				const vector<Blob<Dtype>*>& top);
+		virtual inline LayerParameter_LayerType type() const {
+		    return LayerParameter_LayerType_SPECIFIED_SOFT_PLUS_CONVOLUTION;
+		  }
+protected:
+		virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+		      const vector<Blob<Dtype>*>& top);
+		virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+		  const vector<Blob<Dtype>*>& top);
+		virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+		  const vector<Blob<Dtype>*>& top){}
+		virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+		  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+		virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+		  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){}
+		void Check_Masked_Weight_cpu(const Dtype* data);
+		void Set_Masked_Weight_cpu(Dtype* data);
+
+		//set g(x) = (1/beta)*log(1+exp(beta*x)) to blobs and copy x to buffer
+		// the softplused param will be stored in buff_->diff
+		void Copy_to_buff_and_softplus_blobs_cpu();
+		//copy x back to blobs and
+		//set the right diff to blobs_diff according to chain rule
+		// diff(f(x))/diff(x) = (diff(f(x))/diff(g(x)))  * (diff(g(x))/diff(x) )
+		// this function will destory data in buffer_
+		void Restore_to_blobs_and_set_diff_cpu();
+
+		void Restore_weights_bias_cpu();
+
+		void Set_weights_bias_to_softplus_cpu();// only valid after Copy_to_buff_and_softplus_blobs_cpu
+
+
+
+
+		vector< vector <int> > activation_rules;
+		float beta;
+		Blob<Dtype> weights_buffer_; // store softplused weight
+		Blob<Dtype> bias_buffer_;   // store softplused bias
+
+
+};
+
 template <typename Dtype>
 class ScaleConvolutionLayer : public ConvolutionLayer<Dtype>{
 /**
@@ -124,11 +200,10 @@ public:
 	      : ConvolutionLayer<Dtype>(param) {this->cur_scale = 0;}
 	  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 	      const vector<Blob<Dtype>*>& top);
-//	  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-//	      const vector<Blob<Dtype>*>& top){}
+
 
 	  virtual inline LayerParameter_LayerType type() const {
-	    return LayerParameter_LayerType_CONVOLUTION;
+	    return LayerParameter_LayerType_SCALE_CONVOLUTION;
 	  }
 //	  virtual inline int MinBottomBlobs() const { return 1; }
 //	  virtual inline int MinTopBlobs() const { return 1; }
@@ -358,6 +433,47 @@ class PoolingLayer : public Layer<Dtype> {
   Blob<int> max_idx_;
 };
 
+/**
+ * designed by alan
+ */
+
+template <typename Dtype>
+class SpecifiedAcrossChannelsSumPoolingLayer : public Layer<Dtype> {
+ public:
+  explicit SpecifiedAcrossChannelsSumPoolingLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline LayerParameter_LayerType type() const {
+    return LayerParameter_LayerType_SPECIFIED_ACROSS_CHANNELS_SUM_POOLING;
+  }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top){}
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){}
+
+
+  int channels_;
+  int height_, width_;
+  int num_output_;
+  vector<vector<int> >activation_rules;
+};
+
+
+
+
 #ifdef USE_CUDNN
 /*
  * @brief cuDNN implementation of PoolingLayer.
@@ -386,6 +502,47 @@ class CuDNNPoolingLayer : public PoolingLayer<Dtype> {
   cudnnPoolingMode_t        mode_;
 };
 #endif
+
+
+/**
+ *
+ * binding layer
+ */
+
+template <typename Dtype>
+class BindingLayer : public Layer<Dtype> {
+ public:
+  explicit BindingLayer(const LayerParameter& param)
+      : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline LayerParameter_LayerType type() const {
+    return LayerParameter_LayerType_BINDING;
+  }
+
+  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
+
+ protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top){}
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){}
+
+  int num_binding_group_;
+  int channels_each_group_;
+  vector< vector<int> > binding_rules;
+  int height_, width_;
+  int max_channel_id;
+};
+
 
 }  // namespace caffe
 

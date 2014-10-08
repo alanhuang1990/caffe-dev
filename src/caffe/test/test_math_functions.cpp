@@ -90,6 +90,48 @@ TYPED_TEST(MathFunctionsTest, TestAsumCPU) {
   EXPECT_LT((cpu_asum - std_asum) / std_asum, 1e-2);
 }
 
+TYPED_TEST(MathFunctionsTest,TestLogCPU){
+	int n = this->blob_bottom_->count();
+	const TypeParam* x = this->blob_bottom_->cpu_data();
+	TypeParam * y = this->blob_bottom_->mutable_cpu_diff();
+	FillerParameter filler_param;
+	filler_param.set_min(0.1);
+	filler_param.set_max(3);
+	UniformFiller<TypeParam> filler(filler_param);
+	filler.Fill(this->blob_bottom_);
+	filler.Fill(this->blob_top_);
+	caffe::caffe_log(n,x,y);
+	TypeParam *z = this->blob_top_->mutable_cpu_data();
+	caffe::caffe_copy(n,x,z);
+	caffe::caffe_log(n,z,z);
+	for(int i=0;i<n;++i)
+	{
+		TypeParam std_log = std::log(x[i]);
+		EXPECT_LT(std::abs((std_log - y[i]) / std_log), 1e-4);
+		EXPECT_EQ(y[i],z[i]);
+	}
+
+}
+
+TYPED_TEST(MathFunctionsTest,TestExpCPU){
+	int n = this->blob_bottom_->count();
+	const TypeParam* x = this->blob_bottom_->cpu_data();
+	TypeParam * y = this->blob_bottom_->mutable_cpu_diff();
+
+	caffe::caffe_exp(n,x,y);
+	TypeParam *z = this->blob_top_->mutable_cpu_data();
+	caffe::caffe_copy(n,x,z);
+	caffe::caffe_exp(n,z,z);
+	for(int i=0;i<n;++i)
+	{
+		TypeParam std_log = std::exp(x[i]);
+		EXPECT_LT(std::abs((std_log - y[i]) / std_log), 1e-4);
+		EXPECT_EQ(y[i],z[i]);
+	}
+
+}
+
+
 TYPED_TEST(MathFunctionsTest, TestSignCPU) {
   int n = this->blob_bottom_->count();
   const TypeParam* x = this->blob_bottom_->cpu_data();
@@ -191,6 +233,54 @@ TYPED_TEST(MathFunctionsTest, TestSgnbitGPU) {
     EXPECT_EQ(signbits[i], x[i] < 0 ? 1 : 0);
   }
 }
+
+TYPED_TEST(MathFunctionsTest,TestLogGPU){
+	int n = this->blob_bottom_->count();
+//	const TypeParam* x = this->blob_bottom_->gpu_data();
+//	TypeParam * y = this->blob_bottom_->mutable_gpu_diff();
+	FillerParameter filler_param;
+	filler_param.set_min(0.1);
+	filler_param.set_max(3);
+	UniformFiller<TypeParam> filler(filler_param);
+	filler.Fill(this->blob_bottom_);
+	filler.Fill(this->blob_top_);
+	//std::cout<<"fuck1"<<endl;
+	caffe::caffe_gpu_log(n,this->blob_bottom_->gpu_data(),this->blob_bottom_->mutable_gpu_diff());
+	//std::cout<<"fuck2"<<endl;
+//	TypeParam *z = this->blob_top_->mutable_gpu_data();
+	Caffe::set_mode(Caffe::GPU);
+	caffe::caffe_copy(n,this->blob_bottom_->gpu_data(),this->blob_top_->mutable_gpu_data());
+	caffe::caffe_gpu_log(n,this->blob_top_->gpu_data(),this->blob_top_->mutable_gpu_data());
+	const TypeParam* y = this->blob_bottom_->cpu_diff();
+	const TypeParam* z = this->blob_top_->cpu_data();
+	const TypeParam* x = this->blob_bottom_->cpu_data();
+	for(int i=0;i<n;++i)
+	{
+		TypeParam std_log = std::log(x[i]);
+		EXPECT_LT(std::abs((std_log - y[i]) / std_log), 1e-4);
+		EXPECT_EQ(y[i],z[i]);
+	}
+}
+TYPED_TEST(MathFunctionsTest,TestExpGPU){
+	int n = this->blob_bottom_->count();
+
+	caffe::caffe_gpu_exp(n,this->blob_bottom_->gpu_data(),this->blob_bottom_->mutable_gpu_diff());
+	//std::cout<<"fuck2"<<endl;
+//	TypeParam *z = this->blob_top_->mutable_gpu_data();
+	Caffe::set_mode(Caffe::GPU);
+	caffe::caffe_copy(n,this->blob_bottom_->gpu_data(),this->blob_top_->mutable_gpu_data());
+	caffe::caffe_gpu_exp(n,this->blob_top_->gpu_data(),this->blob_top_->mutable_gpu_data());
+	const TypeParam* y = this->blob_bottom_->cpu_diff();
+	const TypeParam* z = this->blob_top_->cpu_data();
+	const TypeParam* x = this->blob_bottom_->cpu_data();
+	for(int i=0;i<n;++i)
+	{
+		TypeParam std_log = std::exp(x[i]);
+		EXPECT_LT(std::abs((std_log - y[i]) / std_log), 1e-4);
+		EXPECT_EQ(y[i],z[i]);
+	}
+}
+
 
 TYPED_TEST(MathFunctionsTest, TestFabsGPU) {
   int n = this->blob_bottom_->count();

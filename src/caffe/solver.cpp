@@ -10,8 +10,9 @@
 #include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
-
+#include "caffe/util/im2col.hpp"
 namespace caffe {
+
 
 template <typename Dtype>
 Solver<Dtype>::Solver(const SolverParameter& param)
@@ -71,12 +72,29 @@ void Solver<Dtype>::InitTrainNet() {
   // precedence); then, merge in any NetState specified by the net_param itself;
   // finally, merge in any NetState specified by the train_state (highest
   // precedence).
+
+//  printf("1\n");
+//  Mypause();
+
   NetState net_state;
   net_state.set_phase(TRAIN);
+
   net_state.MergeFrom(net_param.state());
+//  printf("2\n");
+//  Mypause();
+
   net_state.MergeFrom(param_.train_state());
+//  printf("3\n");
+//  Mypause();
+
   net_param.mutable_state()->CopyFrom(net_state);
+//  printf("4\n");
+//  Mypause();
+
   net_.reset(new Net<Dtype>(net_param));
+//  printf("5\n");
+//  Mypause();
+
 }
 
 template <typename Dtype>

@@ -150,6 +150,7 @@ TYPED_TEST(ConvolutionLayerTest, TestSetup) {
   LayerParameter layer_param;
   ConvolutionParameter* convolution_param =
       layer_param.mutable_convolution_param();
+
   convolution_param->set_kernel_size(3);
   convolution_param->set_stride(2);
   convolution_param->set_num_output(4);

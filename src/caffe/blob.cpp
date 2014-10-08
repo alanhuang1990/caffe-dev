@@ -19,8 +19,15 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
   count_ = num_ * channels_ * height_ * width_;
   if (count_ > capacity_) {
     capacity_ = count_;
+//    SyncedMemory* temp_data_ = new SyncedMemory(capacity_ * sizeof(Dtype));
+//    SyncedMemory* temp_diff_ = new SyncedMemory(capacity_ * sizeof(Dtype));
+
     data_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
     diff_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
+//    data_.reset(temp_data_);
+//    diff_.reset(temp_diff_);
+//    delete temp_data_;
+//    delete temp_diff_;
   }
 }
 

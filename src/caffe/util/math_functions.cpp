@@ -205,10 +205,23 @@ void caffe_exp<float>(const int n, const float* a, float* y) {
   vsExp(n, a, y);
 }
 
+
 template <>
 void caffe_exp<double>(const int n, const double* a, double* y) {
   vdExp(n, a, y);
 }
+
+// added by alan
+template <>
+void caffe_log<float>(const int n, const float* a, float* y) {
+  vsLog(n, a, y);
+}
+
+template <>
+void caffe_log<double>(const int n, const double* a, double* y) {
+	vdLog(n, a, y);
+}
+//end alan
 
 template <>
 void caffe_abs<float>(const int n, const float* a, float* y) {

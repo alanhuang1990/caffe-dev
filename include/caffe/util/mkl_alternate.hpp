@@ -33,6 +33,7 @@ extern "C" {
 
 DEFINE_VSL_UNARY_FUNC(Sqr, y[i] = a[i] * a[i]);
 DEFINE_VSL_UNARY_FUNC(Exp, y[i] = exp(a[i]));
+DEFINE_VSL_UNARY_FUNC(Log, y[i] = log(a[i])); // added by alan
 DEFINE_VSL_UNARY_FUNC(Abs, y[i] = fabs(a[i]));
 
 // A simple way to define the vsl unary functions with singular parameter b.

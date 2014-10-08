@@ -37,6 +37,8 @@ class DataTransformer {
    */
   void Transform(const int batch_item_id, const Datum& datum,
                  const Dtype* mean, Dtype* transformed_data);
+  void PostTransform(const int batch_item_id, const Datum& datum,
+          const Dtype* mean, Dtype* transformed_data);
 
  protected:
   virtual unsigned int Rand();

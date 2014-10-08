@@ -86,6 +86,44 @@ void DataTransformer<Dtype>::Transform(const int batch_item_id,
   }
 }
 
+template<typename Dtype>
+void DataTransformer<Dtype>::PostTransform(const int batch_item_id,
+                                       const Datum& datum,
+                                       const Dtype* mean,
+                                       Dtype* transformed_data)
+{
+	  const string& data = datum.data();
+	  const int channels = datum.channels();
+	  const int height = datum.height();
+	  const int width = datum.width();
+	  const int size = datum.channels() * datum.height() * datum.width();
+
+	  /**
+	   * only works for uint8 data data.
+	   * post transfrom  parameters:
+	   * int : post_random_translation_size
+	   * string : post_ground_truth_pooling_param   : [num_of_pooling] [pooling_h_1] ] [pooling_w_1] [pooling_h_2],.......
+	   * int : post_channel_for_additional_translation
+	   */
+	  const int crop_size = param_.crop_size();
+	  const bool mirror = param_.mirror();
+	  const Dtype scale = param_.scale();
+
+//	  if(param_.has_post_random_translation_size())
+//	  {
+//
+//	  }
+//	  if(param_.has_post_ground_truth_pooling_param())
+//	  {
+//
+//	  }
+//	  if(param_.has_post_channel_for_additional_translation())
+//	  {
+//
+//	  }
+
+}
+
 template <typename Dtype>
 void DataTransformer<Dtype>::InitRand() {
   const bool needs_rand = (phase_ == Caffe::TRAIN) &&

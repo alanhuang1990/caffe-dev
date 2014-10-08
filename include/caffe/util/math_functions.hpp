@@ -88,6 +88,11 @@ void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r);
 template <typename Dtype>
 void caffe_exp(const int n, const Dtype* a, Dtype* y);
 
+//added by alan
+template <typename Dtype>
+void caffe_log(const int n, const Dtype* a, Dtype* y);
+
+
 template <typename Dtype>
 void caffe_abs(const int n, const Dtype* a, Dtype* y);
 
@@ -204,6 +209,13 @@ void caffe_gpu_div(const int N, const Dtype* a, const Dtype* b, Dtype* y);
 
 template <typename Dtype>
 void caffe_gpu_abs(const int n, const Dtype* a, Dtype* y);
+
+// added by alan
+template <typename Dtype>
+void caffe_gpu_log(const int n, const Dtype* a, Dtype* y);
+template <typename Dtype>
+void caffe_gpu_exp(const int n, const Dtype* a, Dtype* y);
+// end
 
 template <typename Dtype>
 void caffe_gpu_powx(const int n, const Dtype* a, const Dtype b, Dtype* y);

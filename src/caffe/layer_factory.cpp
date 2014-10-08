@@ -255,6 +255,11 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     LOG(FATAL) << "Layer " << name << " has unspecified type.";
   case LayerParameter_LayerType_SCALE_CONVOLUTION:
 	return new ScaleConvolutionLayer<Dtype>(param);
+  case LayerParameter_LayerType_SPECIFIED_SOFT_PLUS_CONVOLUTION:  // added by alan
+	return new SpecifiedSoftPlusConvolutionLayer<Dtype>(param);
+
+  case LayerParameter_LayerType_SPECIFIED_ACROSS_CHANNELS_SUM_POOLING:
+	return new SpecifiedAcrossChannelsSumPoolingLayer<Dtype>(param);
   default:
     LOG(FATAL) << "Layer " << name << " has unknown type " << type;
   }

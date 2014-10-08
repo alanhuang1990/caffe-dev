@@ -10,7 +10,6 @@
 
 
 namespace caffe {
-
 void Mypause(){
 	char c;
 	while((c= getchar() !='\n'));
